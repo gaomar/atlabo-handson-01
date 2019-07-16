@@ -1,0 +1,803 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>LINE Things &#43; LINE Pay連携ハンズオン</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="dist"
+                  title="LINE Things &#43; LINE Pay連携ハンズオン"
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="LINE Payサンドボックス環境設定をしよう！" duration="0">
+        <h2 is-upgraded>1-1. LINE Payのサンドボックス環境を作成する</h2>
+<p>下記URLからサンドボックス環境を作成します。<br><a href="https://pay.line.me/jp/developers/techsupport/sandbox/creation?locale=ja_JP" target="_blank">https://pay.line.me/jp/developers/techsupport/sandbox/creation?locale=ja_JP</a></p>
+<p>メールアドレスを入力して［Submit］ボタンをクリックします。<br><img alt="s100" src="img/8fb6049ffacff42.png"></p>
+<h2 is-upgraded>1-2. LINE Pay Homeにログインする</h2>
+<p>設定したメールアドレスにログインするためのIDとパスワードが送られてきます。<br><code>LINE Pay Home</code> 部分をクリックして、ログインします。</p>
+<p><a href="https://pay.line.me/login/" target="_blank">https://pay.line.me/login/</a></p>
+<p class="image-container"><img alt="s101" src="img/706c3a7a1a56c91e.png"></p>
+<p>メールに記載されているIDとパスワードでログインします。</p>
+<p class="image-container"><img alt="s102" src="img/51568b4b951c097d.png"></p>
+<p>左側メニューの決済連動管理にある、連動キー管理をクリックして、メールに記載されているパスワードを入力してから、［確認］ボタンをクリックします。</p>
+<p class="image-container"><img alt="s103" src="img/c31b2eea637864cc.png"></p>
+<h2 is-upgraded>1-3. IDとSecret Keyをメモする</h2>
+<p><code>Channel ID</code> と <code>Channel Secret Key</code> の値をそれぞれメモしておきます。</p>
+<p class="image-container"><img alt="s104" src="img/205f4618565a2a38.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ローカル環境を構築しよう！" duration="0">
+        <h2 is-upgraded>2-1. GitHubからプロジェクトを取得する</h2>
+<p>ローカルの環境にプロジェクトを構築して実際の決済処理の動きを確認してみましょう。<br>適当なフォルダを作成して、GitHubからクローンしてきます。</p>
+<pre><code>$ mkdir my-atlabo-linepay-demo
+$ cd my-atlabo-linepay-demo
+$ git clone -b step1 https://github.com/gaomar/atlabo-linepay-demo.git
+</code></pre>
+<h2 is-upgraded>2-2. Visual Studio Codeに展開する</h2>
+<p>Visual Studio Codeを開いて、ワークスペースに <code>atlabo-linepay-demo</code> のフォルダを指定します。</p>
+<p class="image-container"><img alt="s200" src="img/158fd948287f7954.png"></p>
+<p>表示-ターミナルを開いてください</p>
+<p class="image-container"><img alt="s201" src="img/cce315ab573b12d9.png"></p>
+<p>下記コマンドを実行してインストールしてください。</p>
+<pre><code>$ npm install
+</code></pre>
+<h2 is-upgraded>2-3. 起動確認</h2>
+<p>インストールできたら下記コマンドを実行してブラウザで確認してください。</p>
+<pre><code>$ npm run serve
+</code></pre>
+<p>無事起動できたらこのURLで確認してください。<br><a href="http://localhost:8080/" target="_blank">http://localhost:8080/</a></p>
+<p class="image-container"><img alt="s202" src="img/19a74bb1d3b666e7.png"></p>
+<p>起動確認できたらCTRL + C で終了してください。</p>
+<h2 is-upgraded>2-4. モジュールを追加する</h2>
+<p>LINE Payを実行するために必要なモジュールをインストールします。<br>下記コマンドを実行してモジュールをインストールしてください。</p>
+<pre><code>$ npm i -s line-pay netlify-lambda uuid
+</code></pre>
+<h2 is-upgraded>2-5. 環境変数にLINE Payの設定をする</h2>
+<p>.envというファイルに環境変数を設定します。<br><code>1-3</code>で取得した<code>Channel ID</code> と <code>Channel Secret Key</code> の値を書き込みます</p>
+<pre><code>VUE_APP_LINE_PAY_CHANNEL_ID=XXXXXXXXXX
+VUE_APP_LINE_PAY_CHANNEL_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+</code></pre>
+<p class="image-container"><img alt="s203" src="img/c2aad65f8fa0b94d.png"></p>
+<h2 is-upgraded>2-6. 決済処理を記述する</h2>
+<p>LINE Payの決済処理を記述します。<code>src/lambda/pay.js</code> ファイルを開いて、下記プログラムを記述します。</p>
+<p class="image-container"><img alt="s204" src="img/7263f9cf2bdefeec.png"></p>
+<pre><code>// LINE Pay処理を実装する
+&#34;use strict&#34;
+
+import { URLSearchParams } from &#39;url&#39;
+const uuid = require(&#34;uuid/v4&#34;)
+
+const line_pay = require(&#34;line-pay&#34;)
+const pay = new line_pay({
+  channelId: process.env.VUE_APP_LINE_PAY_CHANNEL_ID,
+  channelSecret: process.env.VUE_APP_LINE_PAY_CHANNEL_SECRET,
+  isSandbox: true  // サンドボックス環境
+})
+
+exports.handler = function(event, context, callback) {
+  const body = event.body
+  let params = new URLSearchParams(body)
+  const type = params.get(&#39;type&#39;)
+
+  const headers = {
+    &#39;Access-Control-Allow-Headers&#39;: &#39;*&#39;,
+    &#39;Access-Control-Allow-Origin&#39;: &#39;*&#39;,
+    &#39;Access-Control-Allow-Methods&#39;: &#39;POST&#39;,
+    &#39;Content-Type&#39;: &#39;application/json&#39;
+  }
+
+  if (type === &#39;reserve&#39;) {
+    // 決済予約
+    let options = {
+      productName: &#34;ロック解除&#34;,
+      amount: 1,                 // 金額（この場合は1円）
+      currency: &#34;JPY&#34;,           // 日本円
+      orderId: uuid(),
+      confirmUrl: process.env.VUE_APP_LINE_PAY_CONFIRM_URL
+    }
+    pay.reserve(options).then((response) =&gt; {
+      let reservation = options
+      reservation.transactionId = response.info.transactionId
+      reservation.paymentUrl = response.info.paymentUrl.web
+  
+      callback(null, {
+        statusCode: 200,
+        body: JSON.stringify(reservation),
+        headers: headers
+      })  
+    })
+  } else if (type === &#39;confirm&#39;) {
+    // 決済処理
+    const transactionId = params.get(&#39;transactionId&#39;)
+    const reservations = JSON.parse(params.get(&#39;reservations&#39;))
+
+    let confirmation = {
+      transactionId: transactionId,
+      amount: reservations.amount,
+      currency: reservations.currency
+    }
+
+    pay.confirm(confirmation).then((response) =&gt; {
+      callback(null, {
+        statusCode: 200,
+        body: &#39;決済完了しました！&#39;,
+        headers: headers
+      })
+    })
+  } else {
+    callback(null, {
+      statusCode: 400,
+      body: &#39;APIエラー&#39;,
+      headers: headers
+    })
+  }
+}
+</code></pre>
+<h2 is-upgraded>2-7. 画面遷移を有効にする</h2>
+<p><code>src/router.js</code> ファイルを編集して、決済画面に遷移できるようにします。<br>16行目と27行目をコメントアウトします。</p>
+<p class="image-container"><img alt="s205" src="img/44f2898f0e41c0b6.png"></p>
+<h2 is-upgraded>2-8. ローカル環境で実行する</h2>
+<p>ターミナルから下記コマンドを実行します。</p>
+<pre><code>$ npm run serve
+</code></pre>
+<p class="image-container"><img alt="s206" src="img/ab3d53975c780550.png"></p>
+<p>もう一つ新しいターミナルを開いて、下記コマンドを実行します。</p>
+<pre><code>$ npm run lambda
+
+Lambda server is listening on 9000 // ←これが出てくればOK
+</code></pre>
+<p class="image-container"><img alt="s207" src="img/c5f1839c01bf90ae.png"></p>
+<p><a href="http://localhost:8080" target="_blank">http://localhost:8080</a>にアクセスすると決済処理を確認することができます。<br>携帯からQRコードを読み取っても決済することができます。</p>
+<p>※サンドボックス環境なので、実際に決済はされません！</p>
+<p class="image-container"><img alt="s208" src="img/335f54c1c87f8929.png"></p>
+<p>確認できたら、<code>Ctrl + C</code> でプログラムを終了しておいてください。</p>
+<h2 is-upgraded>2-9. ngrokで外部からアクセスしてみる</h2>
+<p>ngrokがまだインストールされていない方はインストールしてください。</p>
+<pre><code>$ npm i -g ngrok
+</code></pre>
+<p>ターミナルをひらいて、下記コマンドを実行します。<br>8080ポートを指定します。</p>
+<pre><code>$ ngrok http 8080
+
+https://xxxxxxxx.ngrok.io -&gt; http://localhost:8080 // httpsの値をコピー
+</code></pre>
+<p>もう一つ新しいターミナルをひらいて下記コマンドを実行します。<br>9000ポートを指定します。</p>
+<pre><code>$ ngrok http 9000
+
+https://xxxxxxxx.ngrok.io -&gt; http://localhost:9000 // httpsの値をコピー
+</code></pre>
+<p>発行されたURLを.envファイルに記述します。</p>
+<table>
+<tr></tr>
+<tr><td colspan="1" rowspan="1"><p>VUE_APP_LINE_PAY_BASE_URL</p>
+</td><td colspan="1" rowspan="1"><p>https://xxxxxxxx.ngrok.io <br>※9000ポートの値（ngrokの値は毎回実行毎に生成されます）</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VUE_APP_LINE_PAY_CONFIRM_URL</p>
+</td><td colspan="1" rowspan="1"><p>https://xxxxxxxx.ngrok.io/pay/confirm <br>※8080ポートの値（ngrokの値は毎回実行毎に生成されます）</p>
+</td></tr>
+</table>
+<p class="image-container"><img alt="s209" src="img/1548d64b5d79da93.png"></p>
+<p>8080で発行されたngrokのURLにアクセスします。<br><img alt="s210" src="img/364cc518db9b1f13.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="LINEチャネルとLIFFを作成しよう！" duration="0">
+        <h2 is-upgraded>3-1. LINEチャネルを作成する</h2>
+<p>いよいよLINE Thingsのキモの部分を作成していきます。<br>LINE Developerにアクセスしてください。</p>
+<p><strong>※ログインする際はLINEアプリで使っているアカウントと同一のものでログインしてください！</strong></p>
+<p><a href="https://developers.line.biz/ja/" target="_blank">https://developers.line.biz/ja/</a></p>
+<p>プロバイダーをまだ持っていない方は新規で作成してください。</p>
+<p>新規チャネルを作成します。</p>
+<p class="image-container"><img alt="s300" src="img/337fed51ab4597ec.png"></p>
+<p>MessagingAPIを選択します。</p>
+<p class="image-container"><img alt="s301" src="img/496ecb54de9ad64a.png"></p>
+<table>
+<tr></tr>
+<tr><td colspan="1" rowspan="1"><p>①アプリ名</p>
+</td><td colspan="1" rowspan="1"><p>M5Pay</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>②説明</p>
+</td><td colspan="1" rowspan="1"><p>M5Pay</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>③大業種</p>
+</td><td colspan="1" rowspan="1"><p>個人</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>③小業種</p>
+</td><td colspan="1" rowspan="1"><p>個人（その他）</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>④メールアドレス</p>
+</td><td colspan="1" rowspan="1"><p>ご自身のメールアドレス</p>
+</td></tr>
+</table>
+<p class="image-container"><img alt="s302" src="img/5f3136b8f10d5d08.png"></p>
+<p>同意するをクリック<br><img alt="s303" src="img/f1de10fefd643b03.png"></p>
+<p>2つのチェックを入れて作成ボタンをクリックします。</p>
+<p class="image-container"><img alt="s304" src="img/b6a10098247670c7.png"></p>
+<p>作成されたチャネルをクリックします。</p>
+<p class="image-container"><img alt="s305" src="img/aa92321bf1b4d4a8.png"></p>
+<h2 is-upgraded>3-2. アクセストークンを発行する</h2>
+<p>少し下にスクロールするとメッセージ送信設定という部分があります。<br>そこの［再発行］ボタンをクリックします。</p>
+<p class="image-container"><img alt="s306" src="img/7f294fc4df2711c.png"></p>
+<p>出てきたポップアップはそのまま［再発行］ボタンをクリックします。</p>
+<p class="image-container"><img alt="s307" src="img/8b06c1895c0ef130.png"></p>
+<p>発行されたアクセストークンは後で使うのでメモしておきましょう。</p>
+<p class="image-container"><img alt="s308" src="img/1e3c17159f9d07d2.png"></p>
+<h2 is-upgraded>3-3. LIFFを設定する</h2>
+<p>LIFFとはLINE Front-end Frameworkの略で、LINE内で動作するウェブアプリのプラットフォームです。</p>
+<p>表示できるサイズは3種類あります。用途に合わせて使い分けましょう。</p>
+<p class="image-container"><img alt="s309" src="img/c0d182aa7d8498db.png"></p>
+<p>LIFFタブをクリックして、作成ボタンをクリックします。</p>
+<p class="image-container"><img alt="s310" src="img/b1f4daf1d528b130.png"></p>
+<table>
+<tr></tr>
+<tr><td colspan="1" rowspan="1"><p>①名前</p>
+</td><td colspan="1" rowspan="1"><p>M5Pay</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>②サイズ</p>
+</td><td colspan="1" rowspan="1"><p>Full</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>③エンドポイントURL</p>
+</td><td colspan="1" rowspan="1"><p>https://xxxxxxxx.ngrok.io<br>※8080ポートの値（ngrokの値は毎回実行毎に生成されます）</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>④オプション</p>
+</td><td colspan="1" rowspan="1"><p>必ずONにする</p>
+</td></tr>
+</table>
+<p class="image-container"><img alt="s311" src="img/20041548a9d350d9.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="サービスUUIDを生成しよう！" duration="0">
+        <h2 is-upgraded>4-1. サービスUUIDを生成する</h2>
+<p><a href="https://twitter.com/n0bisuke" target="_blank">のびすけ</a>さんが作ったツールをありがたく使います。<br>下記にアクセスしてください。</p>
+<p><a href="https://n0bisuke.github.io/linethingsgen/" target="_blank">https://n0bisuke.github.io/linethingsgen/</a></p>
+<p>左側メニューのSettingをクリックして、<code>3-2</code>で生成したアクセストークンを貼り付けます。<br>［保存］ボタンをクリックします。</p>
+<p class="image-container"><img alt="s400" src="img/70ed93aa75c8de34.png"></p>
+<p>左側メニューのCreate Productをクリックして、プルダウンメニューから<code>3-3</code>で作成したLIFFアプリを指定します。<br>トライアルプロダクトの名前を入力して［作成］ボタンをクリックします。</p>
+<p class="image-container"><img alt="s401" src="img/3f996f7dde1e6b1d.png"></p>
+<p>生成されたサービスUUIDをメモしておきましょう。</p>
+<p class="image-container"><img alt="s402" src="img/cc2cf3fe52c859cd.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="LINE Thingsに対応しよう！" duration="0">
+        <h2 is-upgraded>5-1. .envファイルを修正する</h2>
+<p><code>.env</code>ファイルの<code>VUE_APP_USER_SERVICE_UUID</code>に先程生成されたサービスUUIDをコピペします。</p>
+<h2 is-upgraded>5-2. プログラムを修正する</h2>
+<p>Vue.js側のプログラムを修正します。<code>src/views/Confirm.vue</code><br>下記コードをコピペしてください。</p>
+<p>コードはこちらからもコピペできます</p>
+<p><a href="https://raw.githubusercontent.com/gaomar/atlabo-linepay-demo/master/src/views/Confirm.vue" target="_blank">https://raw.githubusercontent.com/gaomar/atlabo-linepay-demo/master/src/views/Confirm.vue</a></p>
+<pre><code>&lt;template&gt;
+  &lt;div class=&#34;confirm&#34;&gt;
+    &lt;h1&gt;&#123;&#123;status}}&lt;/h1&gt;
+    &lt;h2&gt;&#123;&#123;bleStatus}}&lt;/h2&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {
+  data () {
+    return {
+      status: &#39;&#39;,
+      USER_SERVICE_UUID: process.env.VUE_APP_USER_SERVICE_UUID,
+      LED_CHARACTERISTIC_UUID: &#39;E9062E71-9E62-4BC6-B0D3-35CDCD9B027B&#39;, /* トライアルは固定値 */
+      bleConnect: false,
+      bleStatus: &#39;デバイス未接続&#39;,
+      characteristic: &#39;&#39;,
+      code: &#39;&#39;
+    }
+  },
+  methods: {
+    confirmAction: function () {
+      if (!this.$route.query.transactionId){
+        throw new Error(&#34;Transaction Id not found.&#34;)
+      }
+
+      // Retrieve the reservation from database.
+      var reservation = JSON.parse(sessionStorage.getItem(this.$route.query.transactionId))
+      if (!reservation){
+          throw new Error(&#34;Reservation not found.&#34;)
+      }
+
+      var params = new URLSearchParams()
+      params.set(&#39;type&#39;, &#39;confirm&#39;)
+      params.set(&#39;transactionId&#39;, this.$route.query.transactionId)
+      params.set(&#39;reservations&#39;, JSON.stringify(reservation))
+
+      axios.post(process.env.VUE_APP_LINE_PAY_BASE_URL + &#39;/.netlify/functions/pay&#39;, params)
+        .then(response =&gt; {
+          sessionStorage.clear()
+          this.status = &#39;決済完了しました！&#39;
+      
+          this.code = &#39;1234&#39;
+          const ch_array = this.code.split(&#34;&#34;);
+          for(let i = 0; i &lt; 16; i = i + 1) {
+            ch_array[i] = (new TextEncoder(&#39;ascii&#39;)).encode(ch_array[i]);
+          }
+
+          this.characteristic.writeValue(new Uint8Array(ch_array)
+          ).catch(error =&gt; {
+            this.bleStatus = error.message
+          })
+
+        })
+    },
+    // BLEが接続できる状態になるまでリトライ
+    liffCheckAvailablityAndDo: async function (callbackIfAvailable) {
+      try {
+        const isAvailable = await liff.bluetooth.getAvailability();
+        if (isAvailable) {
+          callbackIfAvailable()
+        } else {
+          // リトライ
+          this.bleStatus = `Bluetoothをオンにしてください。`
+          setTimeout(() =&gt; this.liffCheckAvailablityAndDo(callbackIfAvailable), 10000)
+        }
+      } catch (error) {
+        this.bleStatus = `Bluetoothをオンにしてください。`
+      }
+    },
+    // サービスとキャラクタリスティックにアクセス
+    liffRequestDevice: async function () {
+      const device = await liff.bluetooth.requestDevice()
+      await device.gatt.connect()
+      const service = await device.gatt.getPrimaryService(this.USER_SERVICE_UUID)
+      service.getCharacteristic(this.LED_CHARACTERISTIC_UUID).then(characteristic =&gt; {
+        this.characteristic = characteristic
+        this.bleConnect = true
+        this.bleStatus = `デバイスに接続しました！`
+        this.confirmAction()
+      }).catch(error =&gt; {
+        this.bleConnect = true
+        this.bleStatus = `デバイス接続に失敗=${error.message}`
+      })
+    },
+    initializeLiff: async function(){
+      await liff.initPlugins([&#39;bluetooth&#39;]);
+      this.liffCheckAvailablityAndDo(() =&gt; this.liffRequestDevice())
+    }
+  },
+  mounted: function () {
+    liff.init(
+        () =&gt; this.initializeLiff()
+    )
+  }
+}
+&lt;/script&gt;
+</code></pre>
+<h2 is-upgraded>5-3. プログラムを実行しておく</h2>
+<p>修正したら、一度Ctrl + Cでプログラムを終了しておいて、再度実行します。</p>
+<pre><code>$ npm run serve
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="M5Stackにコードを書き込む" duration="0">
+        <h2 is-upgraded>6-1. M5Stackにコードを書き込む</h2>
+<p>Arduino IDEを開いて下記コードを入力します。<br>11行目のサービスUUIDは4-1で生成した値を入力してください。</p>
+<p>コードはこちらからもコピペできます</p>
+<p><a href="https://raw.githubusercontent.com/gaomar/atlabo-linepay-demo/master/src/M5Pay/M5Pay-M5Stack/M5Pay-M5Stack.ino" target="_blank">https://raw.githubusercontent.com/gaomar/atlabo-linepay-demo/master/src/M5Pay/M5Pay-M5Stack/M5Pay-M5Stack.ino</a></p>
+<pre><code>#include &lt;M5Stack.h&gt;
+#include &lt;BLEDevice.h&gt;
+#include &lt;BLEServer.h&gt;
+#include &lt;BLEUtils.h&gt;
+#include &lt;BLE2902.h&gt;
+
+// Device Name: Maximum 30 bytes
+#define DEVICE_NAME &#34;M5Pay&#34;
+
+// あなたのサービスUUIDを貼り付けてください
+#define USER_SERVICE_UUID &#34;＜あなたのサービスUUID＞&#34;
+// Notify UUID: トライアル版は値が固定される
+#define NOTIFY_CHARACTERISTIC_UUID &#34;62FBD229-6EDD-4D1A-B554-5C4E1BB29169&#34;
+// PSDI Service UUID: トライアル版は値が固定される
+#define PSDI_SERVICE_UUID &#34;E625601E-9E55-4597-A598-76018A0D293D&#34;
+// LIFFからのデータ UUID: トライアル版は値が固定される
+#define WRITE_CHARACTERISTIC_UUID &#34;E9062E71-9E62-4BC6-B0D3-35CDCD9B027B&#34;
+// PSDI CHARACTERISTIC UUID: トライアル版は値が固定される
+#define PSDI_CHARACTERISTIC_UUID &#34;26E2B12B-85F0-4F3F-9FDD-91D114270E6E&#34;
+
+BLEServer* thingsServer;
+BLESecurity* thingsSecurity;
+BLEService* userService;
+BLEService* psdiService;
+BLECharacteristic* psdiCharacteristic;
+BLECharacteristic* notifyCharacteristic;
+BLECharacteristic* writeCharacteristic;
+
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+bool unlockFlg = false;
+
+// 認証コード
+int myNumber = 1234;
+
+class serverCallbacks: public BLEServerCallbacks {
+
+  // デバイス接続
+  void onConnect(BLEServer* pServer) {
+    deviceConnected = true;
+
+    // 一度認証されないとコードは生成しない
+    if (unlockFlg) {
+      unlockFlg = false;
+    }
+  };
+
+  // デバイス未接続
+  void onDisconnect(BLEServer* pServer) {
+    deviceConnected = false;
+
+    if (unlockFlg) {
+      unlockFlg = false;
+    }
+  }
+};
+
+// LIFFから送信されるデータ
+class writeCallback: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *bleWriteCharacteristic) {
+    // LIFFから来るデータを取得
+    std::string value = bleWriteCharacteristic-&gt;getValue();
+    int myNum = atoi(value.c_str());
+
+    // 認証コードと一致しているか確認
+    if (myNumber == myNum) {
+      unlockFlg = true;    
+    }    
+  }
+};
+
+void setup() {
+  Serial.begin(115200);
+  BLEDevice::init(&#34;&#34;);
+  BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_NO_MITM);
+
+  // Security Settings
+  BLESecurity *thingsSecurity = new BLESecurity();
+  thingsSecurity-&gt;setAuthenticationMode(ESP_LE_AUTH_BOND);
+  thingsSecurity-&gt;setCapability(ESP_IO_CAP_NONE);
+  thingsSecurity-&gt;setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+
+  setupServices();
+  startAdvertising();
+
+  // put your setup code here, to run once:
+  // M5Stack LCD Setup
+  M5.begin(true, false, false);
+  M5.Lcd.clear(BLACK);
+  M5.Lcd.setTextColor(YELLOW);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setTextDatum(MC_DATUM);  
+  M5.Lcd.drawString(&#34;Ready to Connect&#34;,160,10);
+  Serial.println(&#34;Ready to Connect&#34;);
+
+}
+
+void loop() {
+  if (!deviceConnected &amp;&amp; oldDeviceConnected) {
+    delay(500); // Wait for BLE Stack to be ready
+    thingsServer-&gt;startAdvertising(); // Restart advertising
+    oldDeviceConnected = deviceConnected;
+    Serial.println(&#34;Restart!&#34;);
+    M5.Lcd.clear(BLACK);
+    M5.Lcd.setTextColor(YELLOW);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextDatum(MC_DATUM);  
+    M5.Lcd.drawString(&#34;Ready to Connect&#34;,160,10);
+  }
+
+  // Connection
+  if (deviceConnected &amp;&amp; !oldDeviceConnected) {
+    oldDeviceConnected = deviceConnected;
+    M5.Lcd.clear(BLACK);
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextDatum(MC_DATUM);  
+    M5.Lcd.drawString(&#34;Connect&#34;,160,10);
+    
+  }
+
+  if (unlockFlg){
+    M5.Lcd.clear(GREEN);
+    M5.Lcd.setTextColor(BLACK);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setTextDatum(MC_DATUM);  
+    M5.Lcd.drawString(&#34;UNLOCK&#34;,160,10);
+
+    delay(5000);
+    unlockFlg = false;      
+  }
+
+  M5.update();
+
+}
+
+// サービス初期化
+void setupServices(void) {
+  // Create BLE Server
+  thingsServer = BLEDevice::createServer();
+  thingsServer-&gt;setCallbacks(new serverCallbacks());
+
+  // Setup User Service
+  userService = thingsServer-&gt;createService(USER_SERVICE_UUID);
+
+  // LIFFからのデータ受け取り設定
+  writeCharacteristic = userService-&gt;createCharacteristic(WRITE_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE);
+  writeCharacteristic-&gt;setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+  writeCharacteristic-&gt;setCallbacks(new writeCallback());
+
+  // Notifyセットアップ
+  notifyCharacteristic = userService-&gt;createCharacteristic(NOTIFY_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_NOTIFY);
+  notifyCharacteristic-&gt;setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+  BLE2902* ble9202 = new BLE2902();
+  ble9202-&gt;setNotifications(true);
+  ble9202-&gt;setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+  notifyCharacteristic-&gt;addDescriptor(ble9202);
+
+  // Setup PSDI Service
+  psdiService = thingsServer-&gt;createService(PSDI_SERVICE_UUID);
+  psdiCharacteristic = psdiService-&gt;createCharacteristic(PSDI_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ);
+  psdiCharacteristic-&gt;setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+
+  // Set PSDI (Product Specific Device ID) value
+  uint64_t macAddress = ESP.getEfuseMac();
+  psdiCharacteristic-&gt;setValue((uint8_t*) &amp;macAddress, sizeof(macAddress));
+
+  // Start BLE Services
+  userService-&gt;start();
+  psdiService-&gt;start();
+}
+
+void startAdvertising(void) {
+  // Start Advertising
+  BLEAdvertisementData scanResponseData = BLEAdvertisementData();
+  scanResponseData.setFlags(0x06); // GENERAL_DISC_MODE 0x02 | BR_EDR_NOT_SUPPORTED 0x04
+  scanResponseData.setName(DEVICE_NAME);
+
+  thingsServer-&gt;getAdvertising()-&gt;addServiceUUID(userService-&gt;getUUID());
+  thingsServer-&gt;getAdvertising()-&gt;setScanResponseData(scanResponseData);
+  thingsServer-&gt;getAdvertising()-&gt;start();
+}
+</code></pre>
+<p><code>M5Stack-Core-ESP32</code>にする</p>
+<p class="image-container"><img alt="s500" src="img/4a609b4a0dade611.png"></p>
+<p>コードを書き換えたら書き込みボタンをクリックします</p>
+<p class="image-container"><img alt="s501" src="img/6581a0629dc219ac.png"></p>
+<p>LINEアプリをひらいて、M5Payをクリックして権限を許可してペアリングを完了してください。</p>
+<p class="image-container"><img alt="s510" src="img/4ce3374f4519457a.png"></p>
+<p>M5Payをタップすると、LINE Payボタンが表示されているので、それをクリックして決済を完了させてください。</p>
+<p class="image-container"><img alt="s520" src="img/92cba342e13231d6.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="M5StickCにコードを書き込む" duration="0">
+        <h2 is-upgraded>7-1. M5StickCにコードを書き込む</h2>
+<p>Arduino IDEを開いて下記コードを入力します。<br>11行目のサービスUUIDは4-1で生成した値を入力してください。</p>
+<p>コードはこちらからもコピペできます</p>
+<p><a href="https://raw.githubusercontent.com/gaomar/atlabo-linepay-demo/master/src/M5Pay/M5Pay-M5Stick/M5Pay-M5Stick.ino" target="_blank">https://raw.githubusercontent.com/gaomar/atlabo-linepay-demo/master/src/M5Pay/M5Pay-M5Stick/M5Pay-M5Stick.ino</a></p>
+<pre><code>#include &lt;M5StickC.h&gt;
+#include &lt;BLEDevice.h&gt;
+#include &lt;BLEServer.h&gt;
+#include &lt;BLEUtils.h&gt;
+#include &lt;BLE2902.h&gt;
+
+// Device Name: Maximum 30 bytes
+#define DEVICE_NAME &#34;M5Pay&#34;
+
+// あなたのサービスUUIDを貼り付けてください
+#define USER_SERVICE_UUID &#34;＜あなたのサービスUUID＞&#34;
+// Notify UUID: トライアル版は値が固定される
+#define NOTIFY_CHARACTERISTIC_UUID &#34;62FBD229-6EDD-4D1A-B554-5C4E1BB29169&#34;
+// PSDI Service UUID: トライアル版は値が固定される
+#define PSDI_SERVICE_UUID &#34;E625601E-9E55-4597-A598-76018A0D293D&#34;
+// LIFFからのデータ UUID: トライアル版は値が固定される
+#define WRITE_CHARACTERISTIC_UUID &#34;E9062E71-9E62-4BC6-B0D3-35CDCD9B027B&#34;
+// PSDI CHARACTERISTIC UUID: トライアル版は値が固定される
+#define PSDI_CHARACTERISTIC_UUID &#34;26E2B12B-85F0-4F3F-9FDD-91D114270E6E&#34;
+
+BLEServer* thingsServer;
+BLESecurity* thingsSecurity;
+BLEService* userService;
+BLEService* psdiService;
+BLECharacteristic* psdiCharacteristic;
+BLECharacteristic* notifyCharacteristic;
+BLECharacteristic* writeCharacteristic;
+
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+bool unlockFlg = false;
+
+// 認証コード
+int myNumber = 1234;
+
+class serverCallbacks: public BLEServerCallbacks {
+
+  // デバイス接続
+  void onConnect(BLEServer* pServer) {
+    deviceConnected = true;
+
+    // 一度認証されないとコードは生成しない
+    if (unlockFlg) {
+      unlockFlg = false;
+    }
+  };
+
+  // デバイス未接続
+  void onDisconnect(BLEServer* pServer) {
+    deviceConnected = false;
+
+    if (unlockFlg) {
+      unlockFlg = false;
+    }
+  }
+};
+
+// LIFFから送信されるデータ
+class writeCallback: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *bleWriteCharacteristic) {
+    // LIFFから来るデータを取得
+    std::string value = bleWriteCharacteristic-&gt;getValue();
+    int myNum = atoi(value.c_str());
+
+    // 認証コードと一致しているか確認
+    if (myNumber == myNum) {
+      unlockFlg = true;    
+    }    
+  }
+};
+
+void setup() {
+  Serial.begin(115200);
+  BLEDevice::init(&#34;&#34;);
+  BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_NO_MITM);
+
+  // Security Settings
+  BLESecurity *thingsSecurity = new BLESecurity();
+  thingsSecurity-&gt;setAuthenticationMode(ESP_LE_AUTH_BOND);
+  thingsSecurity-&gt;setCapability(ESP_IO_CAP_NONE);
+  thingsSecurity-&gt;setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+
+  setupServices();
+  startAdvertising();
+
+  // put your setup code here, to run once:
+  // M5Stick LCD Setup
+  M5.begin(true, false, false);
+
+  // 横向き
+  M5.Lcd.setRotation(3);
+  
+  M5.Lcd.fillScreen(TFT_BLACK);
+  M5.Lcd.setTextColor(YELLOW);
+  M5.Lcd.setTextDatum(MC_DATUM);  
+  M5.Lcd.drawString(&#34;Ready to Connect&#34;,80,10);
+  Serial.println(&#34;Ready to Connect&#34;);
+
+}
+
+void loop() {
+  if (!deviceConnected &amp;&amp; oldDeviceConnected) {
+    delay(500); // Wait for BLE Stack to be ready
+    thingsServer-&gt;startAdvertising(); // Restart advertising
+    oldDeviceConnected = deviceConnected;
+    Serial.println(&#34;Restart!&#34;);
+    M5.Lcd.fillScreen(TFT_BLACK);
+    M5.Lcd.setTextColor(YELLOW);
+    M5.Lcd.setTextDatum(MC_DATUM);  
+    M5.Lcd.drawString(&#34;Ready to Connect&#34;,80,10);
+  }
+
+  // Connection
+  if (deviceConnected &amp;&amp; !oldDeviceConnected) {
+    oldDeviceConnected = deviceConnected;
+    M5.Lcd.fillScreen(TFT_BLACK);
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.setTextDatum(MC_DATUM);  
+    M5.Lcd.drawString(&#34;Connect&#34;,80,10);
+    
+  }
+
+  if (unlockFlg){
+    M5.Lcd.fillScreen(TFT_GREEN);
+    M5.Lcd.setTextColor(BLACK);
+    M5.Lcd.setTextDatum(MC_DATUM);  
+    M5.Lcd.drawString(&#34;UNLOCK&#34;,80,10);
+
+    delay(5000);
+    unlockFlg = false;      
+  }
+
+}
+
+// サービス初期化
+void setupServices(void) {
+  // Create BLE Server
+  thingsServer = BLEDevice::createServer();
+  thingsServer-&gt;setCallbacks(new serverCallbacks());
+
+  // Setup User Service
+  userService = thingsServer-&gt;createService(USER_SERVICE_UUID);
+
+  // LIFFからのデータ受け取り設定
+  writeCharacteristic = userService-&gt;createCharacteristic(WRITE_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE);
+  writeCharacteristic-&gt;setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+  writeCharacteristic-&gt;setCallbacks(new writeCallback());
+
+  // Notifyセットアップ
+  notifyCharacteristic = userService-&gt;createCharacteristic(NOTIFY_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_NOTIFY);
+  notifyCharacteristic-&gt;setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+  BLE2902* ble9202 = new BLE2902();
+  ble9202-&gt;setNotifications(true);
+  ble9202-&gt;setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+  notifyCharacteristic-&gt;addDescriptor(ble9202);
+
+  // Setup PSDI Service
+  psdiService = thingsServer-&gt;createService(PSDI_SERVICE_UUID);
+  psdiCharacteristic = psdiService-&gt;createCharacteristic(PSDI_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ);
+  psdiCharacteristic-&gt;setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+
+  // Set PSDI (Product Specific Device ID) value
+  uint64_t macAddress = ESP.getEfuseMac();
+  psdiCharacteristic-&gt;setValue((uint8_t*) &amp;macAddress, sizeof(macAddress));
+
+  // Start BLE Services
+  userService-&gt;start();
+  psdiService-&gt;start();
+}
+
+void startAdvertising(void) {
+  // Start Advertising
+  BLEAdvertisementData scanResponseData = BLEAdvertisementData();
+  scanResponseData.setFlags(0x06); // GENERAL_DISC_MODE 0x02 | BR_EDR_NOT_SUPPORTED 0x04
+  scanResponseData.setName(DEVICE_NAME);
+
+  thingsServer-&gt;getAdvertising()-&gt;addServiceUUID(userService-&gt;getUUID());
+  thingsServer-&gt;getAdvertising()-&gt;setScanResponseData(scanResponseData);
+  thingsServer-&gt;getAdvertising()-&gt;start();
+}
+</code></pre>
+<p class="image-container"><img alt="s600" src="img/e9ffc116bc2b9c67.png"></p>
+<p><code>ESP32 Pico Kit</code>にする</p>
+<p class="image-container"><img alt="s601" src="img/88bfba002bcf9f92.png"></p>
+<p>LINEアプリをひらいて、M5Payをクリックして権限を許可してペアリングを完了してください。</p>
+<p class="image-container"><img alt="s510" src="img/4ce3374f4519457a.png"></p>
+<p>M5Payをタップすると、LINE Payボタンが表示されているので、それをクリックして決済を完了させてください。</p>
+<p class="image-container"><img alt="s602" src="img/369e687d739b1d60.png"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>
