@@ -304,7 +304,13 @@ MessagingAPIを選択します。
 
 ![s308](images/s308.png)
 
-### 3-3. LIFFを設定する
+### 3-3. LINE Botと友だちになる
+下にスクロールするとQRコードがあるので、LINEアプリからQRを読み取って、
+Botと友だちになっておいてください。
+
+![s309-1](images/s309-1.png)
+
+### 3-4. LIFFを設定する
 LIFFとは<font color='red'>LI</font>NE <font color='red'>F</font>ront-end <font color='red'>F</font>rameworkの略で、LINE内で動作するウェブアプリのプラットフォームです。
 
 表示できるサイズは3種類あります。用途に合わせて使い分けましょう。
@@ -337,7 +343,7 @@ LIFFタブをクリックして、作成ボタンをクリックします。
 
 ![s400](images/s400.png)
 
-左側メニューのCreate Productをクリックして、プルダウンメニューから`3-3`で作成したLIFFアプリを指定します。
+左側メニューのCreate Productをクリックして、プルダウンメニューから`3-4`で作成したLIFFアプリを指定します。
 トライアルプロダクトの名前を入力して［作成］ボタンをクリックします。
 
 ![s401](images/s401.png)
