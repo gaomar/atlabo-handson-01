@@ -213,41 +213,35 @@ Lambda server is listening on 9000 // ←これが出てくればOK
 
 確認できたら、`Ctrl + C` でプログラムを終了しておいてください。
 
-### 2-9. ngrokで外部からアクセスしてみる
-ngrokがまだインストールされていない方はインストールしてください。
-
-```shell
-$ npm i -g ngrok
-```
-
+### 2-9. serveoで外部からアクセスしてみる
 ターミナルをひらいて、下記コマンドを実行します。
 8080ポートを指定します。
 
 ```shell
-$ ngrok http 8080
+$ ssh -o ServerAliveInterval=120 -R 80:localhost:8080 serveo.net
 
-https://xxxxxxxx.ngrok.io -> http://localhost:8080 // httpsの値をコピー
+Forwarding HTTP traffic from https://xxxxxx.serveo.net  // httpsの値をコピー
 ```
 
 もう一つ新しいターミナルをひらいて下記コマンドを実行します。
 9000ポートを指定します。
 
 ```shell
-$ ngrok http 9000
+$ ssh -o ServerAliveInterval=120 -R 80:localhost:9000 serveo.net
 
-https://xxxxxxxx.ngrok.io -> http://localhost:9000 // httpsの値をコピー
+Forwarding HTTP traffic from https://xxxxxx.serveo.net  // httpsの値をコピー
 ```
 
 発行されたURLを.envファイルに記述します。
 
 |項目|値|
 |:--|:--|
-|VUE_APP_LINE_PAY_BASE_URL|https://xxxxxxxx.ngrok.io <br/>※9000ポートの値（ngrokの値は毎回実行毎に生成されます）|
-|VUE_APP_LINE_PAY_CONFIRM_URL|https://xxxxxxxx.ngrok.io/pay/confirm <br/>※8080ポートの値（ngrokの値は毎回実行毎に生成されます）|
+|VUE_APP_LINE_PAY_BASE_URL|https://xxxxxx.serveo.net <br/>※9000ポートの値（serveoの値は毎回実行毎に生成されます）|
+|VUE_APP_LINE_PAY_CONFIRM_URL|https://xxxxxx.serveo.net/pay/confirm <br/>※8080ポートの値（serveoの値は毎回実行毎に生成されます）|
 
 ![s209](images/s209.png)
 
-8080で発行されたngrokのURLにアクセスします。
+8080で発行されたserveoのURLにアクセスします。
 ![s210](images/s210.png)
 
 ## LINEチャネルとLIFFを作成しよう！
@@ -325,7 +319,7 @@ LIFFタブをクリックして、作成ボタンをクリックします。
 |:--|:--|
 |①名前|M5Pay|
 |②サイズ|Full|
-|③エンドポイントURL|https://xxxxxxxx.ngrok.io<br/>※8080ポートの値（ngrokの値は毎回実行毎に生成されます）|
+|③エンドポイントURL|https://xxxxxx.serveo.net<br/>※8080ポートの値（serveoの値は毎回実行毎に生成されます）|
 |④オプション|必ずONにする|
 
 ![s311](images/s311.png)

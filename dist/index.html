@@ -171,32 +171,29 @@ Lambda server is listening on 9000 // ←これが出てくればOK
 <p>※サンドボックス環境なので、実際に決済はされません！</p>
 <p class="image-container"><img alt="s208" src="img/335f54c1c87f8929.png"></p>
 <p>確認できたら、<code>Ctrl + C</code> でプログラムを終了しておいてください。</p>
-<h2 is-upgraded>2-9. ngrokで外部からアクセスしてみる</h2>
-<p>ngrokがまだインストールされていない方はインストールしてください。</p>
-<pre><code>$ npm i -g ngrok
-</code></pre>
+<h2 is-upgraded>2-9. serveoで外部からアクセスしてみる</h2>
 <p>ターミナルをひらいて、下記コマンドを実行します。<br>8080ポートを指定します。</p>
-<pre><code>$ ngrok http 8080
+<pre><code>$ ssh -o ServerAliveInterval=120 -R 80:localhost:8080 serveo.net
 
-https://xxxxxxxx.ngrok.io -&gt; http://localhost:8080 // httpsの値をコピー
+Forwarding HTTP traffic from https://xxxxxx.serveo.net  // httpsの値をコピー
 </code></pre>
 <p>もう一つ新しいターミナルをひらいて下記コマンドを実行します。<br>9000ポートを指定します。</p>
-<pre><code>$ ngrok http 9000
+<pre><code>$ ssh -o ServerAliveInterval=120 -R 80:localhost:9000 serveo.net
 
-https://xxxxxxxx.ngrok.io -&gt; http://localhost:9000 // httpsの値をコピー
+Forwarding HTTP traffic from https://xxxxxx.serveo.net  // httpsの値をコピー
 </code></pre>
 <p>発行されたURLを.envファイルに記述します。</p>
 <table>
 <tr></tr>
 <tr><td colspan="1" rowspan="1"><p>VUE_APP_LINE_PAY_BASE_URL</p>
-</td><td colspan="1" rowspan="1"><p>https://xxxxxxxx.ngrok.io <br>※9000ポートの値（ngrokの値は毎回実行毎に生成されます）</p>
+</td><td colspan="1" rowspan="1"><p>https://xxxxxx.serveo.net <br>※9000ポートの値（serveoの値は毎回実行毎に生成されます）</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>VUE_APP_LINE_PAY_CONFIRM_URL</p>
-</td><td colspan="1" rowspan="1"><p>https://xxxxxxxx.ngrok.io/pay/confirm <br>※8080ポートの値（ngrokの値は毎回実行毎に生成されます）</p>
+</td><td colspan="1" rowspan="1"><p>https://xxxxxx.serveo.net/pay/confirm <br>※8080ポートの値（serveoの値は毎回実行毎に生成されます）</p>
 </td></tr>
 </table>
-<p class="image-container"><img alt="s209" src="img/1548d64b5d79da93.png"></p>
-<p>8080で発行されたngrokのURLにアクセスします。<br><img alt="s210" src="img/364cc518db9b1f13.png"></p>
+<p class="image-container"><img alt="s209" src="img/d5b42e0775834f14.png"></p>
+<p>8080で発行されたserveoのURLにアクセスします。<br><img alt="s210" src="img/e5a98623cdb380e5.png"></p>
 
 
       </google-codelab-step>
@@ -260,13 +257,13 @@ https://xxxxxxxx.ngrok.io -&gt; http://localhost:9000 // httpsの値をコピー
 </td><td colspan="1" rowspan="1"><p>Full</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>③エンドポイントURL</p>
-</td><td colspan="1" rowspan="1"><p>https://xxxxxxxx.ngrok.io<br>※8080ポートの値（ngrokの値は毎回実行毎に生成されます）</p>
+</td><td colspan="1" rowspan="1"><p>https://xxxxxx.serveo.net<br>※8080ポートの値（serveoの値は毎回実行毎に生成されます）</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>④オプション</p>
 </td><td colspan="1" rowspan="1"><p>必ずONにする</p>
 </td></tr>
 </table>
-<p class="image-container"><img alt="s311" src="img/20041548a9d350d9.png"></p>
+<p class="image-container"><img alt="s311" src="img/3faa3f1c746a52e1.png"></p>
 
 
       </google-codelab-step>
