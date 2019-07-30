@@ -880,3 +880,112 @@ LINEアプリをひらいて、M5Payをクリックして権限を許可して�
 M5Payをタップすると、LINE Payボタンが表示されているので、それをクリックして決済を完了させてください。
 
 ![s602](images/s602.png)
+
+## GitHubとNetlifyの連携をする
+### 8-1. GitHubにリポジトリを作成する
+下記URLにアクセスしてGitHubにログインし、プライベートリポジトリを作成しましょう。
+
+[https://github.com/new](https://github.com/new)
+
+![s800](images/s800.png)
+
+### 8-2. .gitを設定する
+既存の.gitファイルを削除して、新たに.gitファイルを作成します。下記コマンドを実行してください。
+
+```shell
+$ rm -rf .git
+$ git init
+```
+
+### 8-3. 既存ファイルを追加してコミットする
+下記コマンドを実行してコミット処理まで進めます。
+
+```shell
+$ git add -A
+$ git commit -m "first commit"
+```
+
+### 8-4. remoteを追加してGitHubにプッシュする
+作成したGitHubのURLに対してプッシュを行います
+
+```shell
+$ git remote add origin https://github.com/xxxxxx/my-atlabo-linepay-demo.git // あなたのリポジトリを指定してください
+$ git push -u origin master
+```
+
+### 8-5. NetlifyとGitHubを連携する
+下記URLにアクセスしてログインしてください。ログインはGitHubアカウントでログインできます。既にNetlifyを使ったことがある方はログインしてください。
+
+まだ使ったことがない人はサインアップしてください。
+[https://www.netlify.com/](https://www.netlify.com/)
+
+![s801](images/s801.png)
+
+GitHubでサインアップします。
+
+![s802](images/s802.png)
+
+Authorize Netlifyボタンをクリックします。
+
+![s803](images/s803.png)
+
+New Site from Gitボタンをクリックします。
+
+![s804](images/s804.png)
+
+GitHubをクリックします。
+
+![s805](images/s805.png)
+
+Authorize Netlify by Netlifyボタンをクリックします。
+
+![s806](images/s806.png)
+
+Only select repositoriesのラジオボタンを選択して今回作成したリポジトリを指定し、Installボタンをクリックします。
+
+![s807](images/s807.png)
+
+Netlify画面に戻ると、指定したリポジトリが表示されるので、クリックします。
+![s808](images/s808.png)
+
+特に触らず、そのままDeploy siteボタンをクリックします。
+
+![s809](images/s809.png)
+
+### 8-6. Netlifyの設定を行う
+デプロイが終われば、アクセスURLをメモして、Site settingsボタンをクリックします。
+https://xxxxxxxx-xxxxxxx-xxxxxx.netlify.com
+
+![s810](images/s810.png)
+
+Build & deployのEnvironmentカテゴリにあるEdit variablesをクリックします。
+.envファイルで設定していた値をこちらでも同様の値を設定します。
+
+|項目|値|
+|:--|:--|
+|VUE_APP_LINE_PAY_CHANNEL_ID|`1-3`で取得した`Channel ID`|
+|VUE_APP_LINE_PAY_CHANNEL_SECRET|`1-3`で取得した`Channel Secret Key`|
+|VUE_APP_LINE_PAY_BASE_URL|https://xxxxxxxx-xxxxxxx-xxxxxx.netlify.com<br />※メモしたNetlifyのアクセスURL|
+|VUE_APP_LINE_PAY_CONFIRM_URL|https://xxxxxxxx-xxxxxxx-xxxxxx.netlify.com/pay/confirm <br/>※メモしたNetlifyのアクセスURL|
+|VUE_APP_USER_SERVICE_UUID|`4-1`で作ったサービスUUID|
+
+![s811](images/s811.png)
+
+### 8-7. README.mdファイルを編集
+`8-6`を有効にするためには何でも良いので、ファイルをGitHubにプッシュする必要があります。
+README.mdファイルを適当に編集してGitHubにプッシュしましょう！
+
+```shell
+$ git add -A
+$ git commit -m "second commit"
+$ git push -u origin master
+```
+
+### 8-8. LIFFのURLを変更する
+LINE DeveloperのサイトからLIFFのURLを変更します。
+NetlifyのアクセスURLに変更してください。
+
+![s812](images/s812.png)
+
+これでLIFFが更新されるので、Netlifyがサーバーを起動してくれるので、
+ローカルサーバーをわざわざ起動しなくてもLINE Payの動作を確認することができます。

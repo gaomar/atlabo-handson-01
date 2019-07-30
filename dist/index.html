@@ -792,6 +792,82 @@ void startAdvertising(void) {
 
       </google-codelab-step>
     
+      <google-codelab-step label="GitHubとNetlifyの連携をする" duration="0">
+        <h2 is-upgraded>8-1. GitHubにリポジトリを作成する</h2>
+<p>下記URLにアクセスしてGitHubにログインし、プライベートリポジトリを作成しましょう。</p>
+<p><a href="https://github.com/new" target="_blank">https://github.com/new</a></p>
+<p class="image-container"><img alt="s800" src="img/358042e4b9720bb.png"></p>
+<h2 is-upgraded>8-2. .gitを設定する</h2>
+<p>既存の.gitファイルを削除して、新たに.gitファイルを作成します。下記コマンドを実行してください。</p>
+<pre><code>$ rm -rf .git
+$ git init
+</code></pre>
+<h2 is-upgraded>8-3. 既存ファイルを追加してコミットする</h2>
+<p>下記コマンドを実行してコミット処理まで進めます。</p>
+<pre><code>$ git add -A
+$ git commit -m &#34;first commit&#34;
+</code></pre>
+<h2 is-upgraded>8-4. remoteを追加してGitHubにプッシュする</h2>
+<p>作成したGitHubのURLに対してプッシュを行います</p>
+<pre><code>$ git remote add origin https://github.com/xxxxxx/my-atlabo-linepay-demo.git // あなたのリポジトリを指定してください
+$ git push -u origin master
+</code></pre>
+<h2 is-upgraded>8-5. NetlifyとGitHubを連携する</h2>
+<p>下記URLにアクセスしてログインしてください。ログインはGitHubアカウントでログインできます。既にNetlifyを使ったことがある方はログインしてください。</p>
+<p>まだ使ったことがない人はサインアップしてください。<br><a href="https://www.netlify.com/" target="_blank">https://www.netlify.com/</a></p>
+<p class="image-container"><img alt="s801" src="img/37fd2e137de9acd1.png"></p>
+<p>GitHubでサインアップします。</p>
+<p class="image-container"><img alt="s802" src="img/db197e690f5a20bd.png"></p>
+<p>Authorize Netlifyボタンをクリックします。</p>
+<p class="image-container"><img alt="s803" src="img/b2c0082d9febb2a.png"></p>
+<p>New Site from Gitボタンをクリックします。</p>
+<p class="image-container"><img alt="s804" src="img/362a8bd56edad093.png"></p>
+<p>GitHubをクリックします。</p>
+<p class="image-container"><img alt="s805" src="img/ee5d96b2f7d5550.png"></p>
+<p>Authorize Netlify by Netlifyボタンをクリックします。</p>
+<p class="image-container"><img alt="s806" src="img/1520a8cbfa33127c.png"></p>
+<p>Only select repositoriesのラジオボタンを選択して今回作成したリポジトリを指定し、Installボタンをクリックします。</p>
+<p class="image-container"><img alt="s807" src="img/5859e2d198cf375.png"></p>
+<p>Netlify画面に戻ると、指定したリポジトリが表示されるので、クリックします。<br><img alt="s808" src="img/d8bf3a3ee5ce77f3.png"></p>
+<p>特に触らず、そのままDeploy siteボタンをクリックします。</p>
+<p class="image-container"><img alt="s809" src="img/67a0e7af3570a0a9.png"></p>
+<h2 is-upgraded>8-6. Netlifyの設定を行う</h2>
+<p>デプロイが終われば、アクセスURLをメモして、Site settingsボタンをクリックします。<br>https://xxxxxxxx-xxxxxxx-xxxxxx.netlify.com</p>
+<p class="image-container"><img alt="s810" src="img/18e6c5c37146995c.png"></p>
+<p>Build &amp; deployのEnvironmentカテゴリにあるEdit variablesをクリックします。<br>.envファイルで設定していた値をこちらでも同様の値を設定します。</p>
+<table>
+<tr></tr>
+<tr><td colspan="1" rowspan="1"><p>VUE_APP_LINE_PAY_CHANNEL_ID</p>
+</td><td colspan="1" rowspan="1"><p><code>1-3</code>で取得した<code>Channel ID</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VUE_APP_LINE_PAY_CHANNEL_SECRET</p>
+</td><td colspan="1" rowspan="1"><p><code>1-3</code>で取得した<code>Channel Secret Key</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VUE_APP_LINE_PAY_BASE_URL</p>
+</td><td colspan="1" rowspan="1"><p>https://xxxxxxxx-xxxxxxx-xxxxxx.netlify.com<br>※メモしたNetlifyのアクセスURL</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VUE_APP_LINE_PAY_CONFIRM_URL</p>
+</td><td colspan="1" rowspan="1"><p>https://xxxxxxxx-xxxxxxx-xxxxxx.netlify.com/pay/confirm <br>※メモしたNetlifyのアクセスURL</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VUE_APP_USER_SERVICE_UUID</p>
+</td><td colspan="1" rowspan="1"><p><code>4-1</code>で作ったサービスUUID</p>
+</td></tr>
+</table>
+<p class="image-container"><img alt="s811" src="img/357ec2bd6d0208d5.png"></p>
+<h2 is-upgraded>8-7. README.mdファイルを編集</h2>
+<p><code>8-6</code>を有効にするためには何でも良いので、ファイルをGitHubにプッシュする必要があります。<br>README.mdファイルを適当に編集してGitHubにプッシュしましょう！</p>
+<pre><code>$ git add -A
+$ git commit -m &#34;second commit&#34;
+$ git push -u origin master
+</code></pre>
+<h2 is-upgraded>8-8. LIFFのURLを変更する</h2>
+<p>LINE DeveloperのサイトからLIFFのURLを変更します。<br>NetlifyのアクセスURLに変更してください。</p>
+<p class="image-container"><img alt="s812" src="img/6dc4e5ef0aeb3d47.png"></p>
+<p>これでLIFFが更新されるので、Netlifyがサーバーを起動してくれるので、<br>ローカルサーバーをわざわざ起動しなくてもLINE Payの動作を確認することができます。</p>
+
+
+      </google-codelab-step>
+    
   </google-codelab>
 
   <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
