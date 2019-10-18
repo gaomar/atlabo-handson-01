@@ -47,14 +47,26 @@ id: dist
 ローカルの環境にプロジェクトを構築して実際の決済処理の動きを確認してみましょう。
 適当なフォルダを作成して、GitHubからクローンしてきます。
 
+Macな方
 ```shell
-$ mkdir my-atlabo-linepay-demo
-$ cd my-atlabo-linepay-demo
+$ cd ~/Documents
 $ git clone -b step1 https://github.com/gaomar/atlabo-linepay-demo.git
+```
+
+Windowsな方
+```shell
+> cd %homepath%\Documents\
+> git clone -b step1 https://github.com/gaomar/atlabo-linepay-demo.git
 ```
 
 ### 2-2. Visual Studio Codeに展開する
 Visual Studio Codeを開いて、ワークスペースに `atlabo-linepay-demo` のフォルダを指定します。
+
+Positive
+: 下記コマンドでもVisual Studio Codeが開きます
+```shell
+$ code atlabo-linepay-demo
+```
 
 ![s200](images/s200.png)
 
@@ -217,8 +229,11 @@ Lambda server is listening on 9000 // ←これが出てくればOK
 ターミナルをひらいて、下記コマンドを実行します。
 8080ポートを指定します。
 
+Positive
+: `xxxxx` の部分はご自由に変えてください。
+
 ```shell
-$ ssh -o ServerAliveInterval=120 -R 80:localhost:8080 serveo.net
+$ npx miso-develop/serveo xxxxx 8080
 
 Forwarding HTTP traffic from https://xxxxxx.serveo.net  // httpsの値をコピー
 ```
@@ -227,7 +242,7 @@ Forwarding HTTP traffic from https://xxxxxx.serveo.net  // httpsの値をコピ�
 9000ポートを指定します。
 
 ```shell
-$ ssh -o ServerAliveInterval=120 -R 80:localhost:9000 serveo.net
+$ npx miso-develop/serveo xxxxx 9000
 
 Forwarding HTTP traffic from https://xxxxxx.serveo.net  // httpsの値をコピー
 ```
@@ -320,7 +335,8 @@ LIFFタブをクリックして、作成ボタンをクリックします。
 |①名前|M5Pay|
 |②サイズ|Full|
 |③エンドポイントURL|https://xxxxxx.serveo.net<br/>※8080ポートの値（serveoの値は毎回実行毎に生成されます）|
-|④オプション|必ずONにする|
+|④Scope|2つチェックを入れる|
+|⑤オプション|共にONにする|
 
 ![s311](images/s311.png)
 
@@ -892,11 +908,19 @@ M5Payをタップすると、LINE Payボタンが表示されているので、�
 ### 8-2. .gitを設定する
 既存の.gitファイルを削除して、新たに.gitファイルを作成します。下記コマンドを実行してください。
 
+Macな方
+
 ```shell
 $ rm -rf .git
 $ git init
 ```
 
+Windowsな方
+
+```shell
+> Remove-Item .git -Recurse -Force
+> git init
+```
 ### 8-3. 既存ファイルを追加してコミットする
 下記コマンドを実行してコミット処理まで進めます。
 
